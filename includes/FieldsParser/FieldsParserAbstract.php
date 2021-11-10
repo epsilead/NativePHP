@@ -124,7 +124,7 @@ abstract class FieldsParserAbstract {
     {
         $innerHtml = "";
         $children = $element->childNodes;
-        foreach ( $children as $child ) {
+        foreach ($children as $child){
             $innerHtml .= $element->ownerDocument->saveHTML($child);
         }
         return $innerHtml;
@@ -143,7 +143,7 @@ abstract class FieldsParserAbstract {
      */
     protected static function domEditHtml(DOMNode $element, Closure $editor)
     {
-        if ( is_callable($editor) ) {
+        if (is_callable($editor)){
             $dom = new DOMDocument();
             $text = self::domInnerHtml($element);
 
@@ -196,10 +196,10 @@ abstract class FieldsParserAbstract {
      */
     public function __set($name, $value)
     {
-        if ( !$this->storage instanceof stdClass ) {
+        if (!$this->storage instanceof stdClass){
             $this->storage = new stdClass();
         }
-        if ( !isset($this->storage->$name) ) {
+        if (!isset($this->storage->$name)){
             $this->storage->$name = array();
         }
         $this->storage->$name[] = $value;
@@ -216,7 +216,7 @@ abstract class FieldsParserAbstract {
      */
     public function __get($name)
     {
-        if ( isset($this->storage->$name) ) {
+        if (isset($this->storage->$name)){
             return end($this->storage->$name);
         }
         else {
@@ -232,7 +232,7 @@ abstract class FieldsParserAbstract {
      */
     public function __unset($name)
     {
-        if ( isset($this->storage->$name) ) {
+        if (isset($this->storage->$name)){
             array_pop($this->storage->$name);
         }
     }
@@ -262,7 +262,7 @@ abstract class FieldsParserAbstract {
      */
     public function toArray($hierarchical = TRUE)
     {
-        if ( $hierarchical ) {
+        if ($hierarchical){
             return $this->fileds;
         }
         else {
@@ -285,12 +285,12 @@ abstract class FieldsParserAbstract {
      */
     public function processFields($map = NULL)
     {
-        if ( !$map ) {
+        if (!$map){
             $map = $this->getMap();
         }
 
-        if ( is_array($map) && count($map) ) {
-            foreach ( $map as $mapKey => $mapField ) {
+        if (is_array($map) && count($map)){
+            foreach ($map as $mapKey => $mapField){
                 $this->fields[$mapKey] = $this->processField($mapKey, $mapField);
             }
         }
@@ -316,10 +316,10 @@ abstract class FieldsParserAbstract {
         $action = isset($field['action']) ? $field['action'] : $action;
         $processFunc = $action . $type;
 
-        if ( method_exists($this, $processFunc) ) {
+        if (method_exists($this, $processFunc)){
             $result = $this->$processFunc($name, $field);
 
-            if ( !isset($field['no_filter']) ) {
+            if (!isset($field['no_filter'])){
                 $result = $this->applyFilters($processFunc, $field, $result);
             }
 
@@ -356,8 +356,8 @@ abstract class FieldsParserAbstract {
 
         @$this->callFilter($data, $this->getFilterClosure($field, $type));
 
-        if ( count($types) ) {
-            foreach ( $types as $type ) {
+        if (count($types)){
+            foreach ($types as $type){
 
                 if ($this->callFilter($data, $this->getFilterMethod($type, 'Convert', $method))
                     || $this->callFilter($data, $this->getFilterClosure($field, 'convert', $type))
@@ -393,14 +393,14 @@ abstract class FieldsParserAbstract {
             },
             ucfirst($type)
         );
-        if ( $method ) {
+        if ($method){
             $filterName = $method . $typeClass . $action;
         }
         else {
             $filterName = lcfirst($typeClass) . $action;
         }
 
-        if ( method_exists($this, $filterName) ) {
+        if (method_exists($this, $filterName)){
             return $filterName;
         }
         else {
@@ -423,7 +423,7 @@ abstract class FieldsParserAbstract {
      */
     protected function getFilterClosure(array $haystack, $action = 'filter', $type = FALSE)
     {
-        if ( $type ) {
+        if ($type){
             $filterKey = $type . '_' . $action;
         }
         else {
@@ -451,11 +451,11 @@ abstract class FieldsParserAbstract {
      */
     protected function callFilter(&$data, $filter = NULL)
     {
-        if ( is_callable($filter) ) {
+        if (is_callable($filter)){
             $data = $filter($data);
             return (bool) $data;
         }
-        elseif ( is_string($filter) && method_exists($this, $filter) ) {
+        elseif (is_string($filter) && method_exists($this, $filter)){
             $data = $this->$filter($data);
             return (bool) $data;
         }
@@ -476,10 +476,10 @@ abstract class FieldsParserAbstract {
     protected function getFiltersChain($data)
     {
         $dataType = gettype($data);
-        switch ( $dataType ) {
+        switch ($dataType){
             case 'object':
                 $class = get_class($data);
-                switch ( $class ) {
+                switch ($class){
                     case 'DOMNodeList':
                         $type = 'dom_list';
                         break;
@@ -495,7 +495,7 @@ abstract class FieldsParserAbstract {
                 break;
 
             case 'array':
-                if ( $data[array_rand($data)] instanceof DOMNode ) {
+                if ($data[array_rand($data)] instanceof DOMNode){
                     $type = 'dom_array';
                 }
                 else {
@@ -511,7 +511,7 @@ abstract class FieldsParserAbstract {
                 $type = FALSE;
                 break;
         }
-        if ( in_array($type, $this->filterTypes) ) {
+        if (in_array($type, $this->filterTypes)){
             return array_slice($this->filterTypes, array_search($type, $this->filterTypes));
         }
         else {
@@ -530,7 +530,7 @@ abstract class FieldsParserAbstract {
      */
     protected function domArrayFilter(array $data)
     {
-        if ( is_array($data) && ($data[array_rand($data)] instanceof DOMNode) ) {
+        if (($data[array_rand($data)] instanceof DOMNode)){
             $data = array_map(array($this, 'domFilter'), $data);
         }
         return $data;
@@ -548,8 +548,8 @@ abstract class FieldsParserAbstract {
     protected static function domFilter(DOMNode $data)
     {
         $data = self::domEditHtml($data, function ($text) {
-            $text = preg_replace('/.*(<\/*.*[\w]+\d*.*\/*>).*/Uim', "$1\n", $text);
-            return $text;
+            return preg_replace('/.*(<\/*.*[\w]+\d*.*\/*>).*/Uim', "$1\n", $text);
+
         });
         return $data;
     }
@@ -565,7 +565,7 @@ abstract class FieldsParserAbstract {
      */
     protected function textFilter($data)
     {
-        if ( is_string($data) ) {
+        if (is_string($data)){
             $data = preg_replace('/\n+\s*\n*/m', "\n", $data);
             return trim($data);
         }
@@ -586,7 +586,7 @@ abstract class FieldsParserAbstract {
     protected function parseField($name, array $element)
     {
         $node = $this->find($element['xpath']);
-        if ( $node ) {
+        if ($node){
             return $node;
         }
         else {
@@ -606,7 +606,7 @@ abstract class FieldsParserAbstract {
      */
     protected function parseFieldTextConvert($data)
     {
-        if ( $data instanceof DOMElement ) {
+        if ($data instanceof DOMElement){
             return $data->nodeValue;
         }
         return FALSE;
@@ -631,7 +631,7 @@ abstract class FieldsParserAbstract {
 
         $page = $this->loadPage($element['url']);
 
-        if ( $page->code == '200' ) {
+        if ($page->code == '200'){
             $page->content = str_replace(array("<br>", "<br />"), "\r\n", $page->content);
 
             $dom = new DOMDocument();
@@ -647,7 +647,7 @@ abstract class FieldsParserAbstract {
 
             $elements = array();
 
-            foreach ( $element['fields'] as $fieldName => $field ) {
+            foreach ($element['fields'] as $fieldName => $field){
                 $elements[$fieldName] = $this->processField($fieldName, $field);
             }
 
@@ -673,11 +673,11 @@ abstract class FieldsParserAbstract {
      */
     protected function parseFieldSet($name, array $element)
     {
-        if ( is_array($element['xpath']) ) {
+        if (is_array($element['xpath'])){
             $fieldSet = array();
-            foreach ( $element['xpath'] as $xpath ) {
+            foreach ($element['xpath'] as $xpath){
                 $field = $this->find($xpath);
-                if ( $field ) {
+                if ($field){
                     $fieldSet[] = $field;
                 }
             }
@@ -698,7 +698,7 @@ abstract class FieldsParserAbstract {
     protected function parseFieldSetArrayConvert(array $data)
     {
         $array = array();
-        foreach ( $data as $field ) {
+        foreach ($data as $field){
             $array[] = $field->nodeValue;
         }
         return $array;
@@ -715,11 +715,7 @@ abstract class FieldsParserAbstract {
      */
     protected function parseFieldSetTextConvert(array $data)
     {
-        $text = '';
-        foreach ( $data as $field ) {
-            $text .= $field;
-        }
-        return $text;
+        return implode('', $data);
     }
 
     /**
@@ -736,13 +732,13 @@ abstract class FieldsParserAbstract {
     protected function parseFieldCollection($name, array $element)
     {
         $collection = [];
-        $domainPrefix = $this->domainPrefix ? $this->domainPrefix : '';
+        $domainPrefix = $this->domainPrefix ?: '';
 
         $nodeList = $this->find($element['xpath'], TRUE);
-        if ( $nodeList instanceof DOMNodeList && $nodeList->length > 0 ) {
-            foreach ( $nodeList as $node ) {
+        if ($nodeList instanceof DOMNodeList && $nodeList->length > 0){
+            foreach ($nodeList as $node){
                 $attr = $node->getAttribute($element['attr']);
-                if ( $attr ) {
+                if ($attr){
                     $collection[] = $domainPrefix . $attr;
                 }
             }
@@ -766,10 +762,10 @@ abstract class FieldsParserAbstract {
     {
         $domXPath = new DOMXPath($this->dom);
         $nodeList = $domXPath->query($xpath);
-        if ( $list ) {
+        if ($list){
             return $nodeList;
         }
-        elseif ( $nodeList->length > 0 ) {
+        elseif ($nodeList->length > 0){
             return $domXPath->query($xpath)->item(0);
         }
         return FALSE;
@@ -791,11 +787,11 @@ abstract class FieldsParserAbstract {
     protected function loadPage($url, $curl = NULL, array $opts = NULL)
     {
         $page = new stdClass();
-        if ( !$curl ) {
+        if (!$curl){
             $curl = curl_init($url);
         }
 
-        if ( $opts && is_array($opts) ) {
+        if ($opts && is_array($opts)){
             $opts = array_merge($this->getCurlOpts(), $opts);
         }
         else {
